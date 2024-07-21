@@ -1,12 +1,21 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
 {
-    [SerializeField] InputAction movement;
+    [Header("General Settings")]
+    [Tooltip("Movement Key")] [SerializeField] InputAction movement;
+    [Tooltip("Shoot Key")] [SerializeField] InputAction fire;
+    [Tooltip("How fast the the ship move with movement key")]
     [SerializeField] float controlSpeed = 40f;
+    [Tooltip("Range of Ship movement relative to the screen")]
     [SerializeField] float xRange = 10f;
+    [Tooltip("Range of Ship movement relative to the screen")]
     [SerializeField] float yRange = 8f;
+    [Tooltip("Array of lasers")]
+    [SerializeField] GameObject[] lasers;
+
     [SerializeField] float positionPitchFactor = -2f;
     [SerializeField] float controlPitchFactor = -15f;
     [SerializeField] float positionYawFactor = 5f;
@@ -16,15 +25,18 @@ public class Movement : MonoBehaviour
 
     void OnEnable() {
         movement.Enable();
+        fire.Enable();
     }
     void OnDisable() {
         movement.Disable();
+        fire.Disable();
     }
 
     void Update()
     {
         ProcessTranslation();
         ProcessRotation();
+        ProcessFiring();
 
     }
 
@@ -52,4 +64,26 @@ public class Movement : MonoBehaviour
         float roll = xControl * controlRollFactor;
         transform.localRotation = Quaternion.Euler(pitch, yaw, roll);
     }
+
+    void ProcessFiring()
+    {
+        //if left-clicked mouse button is pressed then shoot
+        if(fire.ReadValue<float>() > 0.5)
+        {
+            SetLaserActive(true);
+        }
+        else{
+            SetLaserActive(false);
+        }
+    }
+
+    void SetLaserActive(bool isActive)
+    {
+        foreach (GameObject laser in lasers)
+        {
+            var emissionModule = laser.GetComponent<ParticleSystem>().emission;
+            emissionModule.enabled = isActive;
+        }
+    }
+
 }
